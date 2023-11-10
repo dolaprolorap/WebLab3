@@ -1,4 +1,4 @@
-﻿using backend.Models;
+﻿using backend.Models.DB;
 using Microsoft.EntityFrameworkCore;
 
 namespace backend.DataAccess
@@ -13,11 +13,14 @@ namespace backend.DataAccess
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             modelBuilder.Entity<User>().HasData(
-                new User { Id = 1, Name="RadiantDwarf", Password="1111" },
-                new User { Id = 2, Name = "Dolaprolorap", Password = "2222" },
-                new User { Id = 3, Name = "UltraGreed", Password = "3333" },
-                new User { Id = 4, Name = "Reveqqq", Password = "4444" }
+                    new User() { Id = Guid.NewGuid(), Name = "RadiantDwarf", Password = "1111"},
+                    new User() { Id = Guid.NewGuid(), Name = "Dolaprolorap", Password = "2222"},
+                    new User() { Id = Guid.NewGuid(), Name = "UltraGreed", Password = "3333"},
+                    new User() { Id = Guid.NewGuid(), Name = "Reveqqq", Password = "4444"}
                 );
+
+            modelBuilder.HasPostgresExtension("uuid-ossp");
+            modelBuilder.Entity<User>().HasIndex(u => u.Name).IsUnique(true);
         }
     }
 }

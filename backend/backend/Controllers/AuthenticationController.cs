@@ -1,5 +1,4 @@
 ﻿using backend.DataAccess.Repository;
-using backend.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -9,6 +8,8 @@ using System.Security.Claims;
 using System.Text;
 using Microsoft.Extensions.Configuration;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using backend.Models.API;
+using backend.Models.DB;
 
 namespace backend.Controllers
 {

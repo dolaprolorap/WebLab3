@@ -1,11 +1,11 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace backend.Models
+namespace backend.Models.DB
 {
     public class User
     {
         [Key]
-        public int Id { get; set; }
+        public Guid Id { get; set; }
         [MaxLength(16)]
         [Required]
         public string Name { get; set; }
