@@ -1,4 +1,4 @@
-﻿namespace backend.Models.API
+﻿namespace backend.Models.API.Auth
 {
     public class KeysModel
     {

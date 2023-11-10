@@ -8,8 +8,8 @@ using System.Security.Claims;
 using System.Text;
 using Microsoft.Extensions.Configuration;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
-using backend.Models.API;
 using backend.Models.DB;
+using backend.Models.API.Auth;
 
 namespace backend.Controllers
 {

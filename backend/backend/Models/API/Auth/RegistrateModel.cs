@@ -1,6 +1,6 @@
-﻿namespace backend.Models.API
+﻿namespace backend.Models.API.Auth
 {
-    public class GetJWTModel
+    public class RegistrateModel
     {
         public string? Login { get; set; }
         public string? Password { get; set; }
