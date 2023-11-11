@@ -16,5 +16,13 @@ namespace backend.Models.DB
         public Guid UserId { get; set; }
         [Required]
         public User User { get; set; }
+
+        public Plot(Guid guid, string name, string data, Guid userId)
+        {
+            PlotId = guid;
+            Name = name;
+            JsonData = data;
+            UserId = userId;
+        }
     }
 }

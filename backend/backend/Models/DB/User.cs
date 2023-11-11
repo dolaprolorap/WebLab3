@@ -12,5 +12,12 @@ namespace backend.Models.DB
         [MaxLength(16)]
         [Required]
         public string Password { get; set; }
+
+        public User(Guid guid, string name, string password)
+        {
+            Id = guid;
+            Name = name;
+            Password = password;
+        }
     }
 }
