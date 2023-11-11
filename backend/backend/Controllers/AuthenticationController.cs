@@ -33,10 +33,11 @@ namespace backend.Controllers
             }
 
             unit.UserRepo.Add(new User
-            {
-                Name = registrateModel.Login,
-                Password = registrateModel.Password
-            });
+            (
+                guid : Guid.NewGuid(),
+                name : registrateModel.Login,
+                password: registrateModel.Password
+            ));
 
             unit.Save();
 
