@@ -5,18 +5,20 @@ namespace backend.Models.DB
     public class User
     {
         [Key]
-        public Guid Id { get; set; }
+        public Guid UserId { get; set; }
         [MaxLength(16)]
         [Required]
-        public string Name { get; set; }
+        public string UserName { get; set; }
         [MaxLength(16)]
         [Required]
         public string Password { get; set; }
 
+        protected User() {}
+
         public User(Guid guid, string name, string password)
         {
-            Id = guid;
-            Name = name;
+            UserId = guid;
+            UserName = name;
             Password = password;
         }
     }

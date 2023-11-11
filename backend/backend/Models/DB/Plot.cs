@@ -9,7 +9,7 @@ namespace backend.Models.DB
         public Guid PlotId { get; set; }
         [MaxLength(16)]
         [Required]
-        public string Name { get; set; }
+        public string PlotName { get; set; }
         [Required]
         public string JsonData { get; set; }
         [Required]
@@ -17,10 +17,12 @@ namespace backend.Models.DB
         [Required]
         public User User { get; set; }
 
+        protected Plot() {}
+
         public Plot(Guid guid, string name, string data, Guid userId)
         {
             PlotId = guid;
-            Name = name;
+            PlotName = name;
             JsonData = data;
             UserId = userId;
         }

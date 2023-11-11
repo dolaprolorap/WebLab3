@@ -6,10 +6,12 @@ namespace backend.DataAccess.Repository
     {
         private readonly AppDbContext _db;
         public IRepository<User> UserRepo { get; private set; }
+        public IRepository<Plot> PlotRepo { get; private set; }
         public UnitOfWork(AppDbContext db)
         {
             _db = db;
             UserRepo = new Repository<User>(db);
+            PlotRepo = new Repository<Plot>(db);
         }
 
         public void Save()

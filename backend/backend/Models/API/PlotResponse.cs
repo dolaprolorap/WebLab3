@@ -2,9 +2,9 @@
 {
     public class PlotResponse
     {
-        Guid Id { get; set; }
-        string Name { get; set; }
-        string JsonData { get; set; }
-
+        public Guid Id { get; set; }
+        public string Name { get; set; }
+        public string JsonData { get; set; }
+        public string UserName { get; set; }
     }
 }
