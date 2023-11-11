@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using backend.DataAccess;
@@ -11,9 +12,11 @@ using backend.DataAccess;
 namespace backend.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20231110085348_AddedUniquePlotNamePerUserConstraint")]
+    partial class AddedUniquePlotNamePerUserConstraint
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -33,7 +36,7 @@ namespace backend.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
-                    b.Property<string>("PlotName")
+                    b.Property<string>("Name")
                         .IsRequired()
                         .HasMaxLength(16)
                         .HasColumnType("character varying(16)");
@@ -45,28 +48,31 @@ namespace backend.Migrations
 
                     b.HasIndex("UserId");
 
+                    b.HasIndex("Name", "UserId")
+                        .IsUnique();
+
                     b.ToTable("Plots");
                 });
 
             modelBuilder.Entity("backend.Models.DB.User", b =>
                 {
-                    b.Property<Guid>("UserId")
+                    b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(16)
+                        .HasColumnType("character varying(16)");
 
                     b.Property<string>("Password")
                         .IsRequired()
                         .HasMaxLength(16)
                         .HasColumnType("character varying(16)");
 
-                    b.Property<string>("UserName")
-                        .IsRequired()
-                        .HasMaxLength(16)
-                        .HasColumnType("character varying(16)");
+                    b.HasKey("Id");
 
-                    b.HasKey("UserId");
-
-                    b.HasIndex("UserName")
+                    b.HasIndex("Name")
                         .IsUnique();
 
                     b.ToTable("Users");
@@ -74,27 +80,27 @@ namespace backend.Migrations
                     b.HasData(
                         new
                         {
-                            UserId = new Guid("32e8110c-b664-4a8b-b69d-f59fba269314"),
-                            Password = "1111",
-                            UserName = "RadiantDwarf"
+                            Id = new Guid("32e8110c-b664-4a8b-b69d-f59fba269314"),
+                            Name = "RadiantDwarf",
+                            Password = "1111"
                         },
                         new
                         {
-                            UserId = new Guid("3b078e3f-e9a4-4098-adf2-ced840603bb4"),
-                            Password = "2222",
-                            UserName = "Dolaprolorap"
+                            Id = new Guid("3b078e3f-e9a4-4098-adf2-ced840603bb4"),
+                            Name = "Dolaprolorap",
+                            Password = "2222"
                         },
                         new
                         {
-                            UserId = new Guid("5399ee18-ffdf-470b-bbae-160287b33244"),
-                            Password = "3333",
-                            UserName = "UltraGreed"
+                            Id = new Guid("5399ee18-ffdf-470b-bbae-160287b33244"),
+                            Name = "UltraGreed",
+                            Password = "3333"
                         },
                         new
                         {
-                            UserId = new Guid("da50fb97-6cca-4b03-af03-2d34ef433d59"),
-                            Password = "4444",
-                            UserName = "Reveqqq"
+                            Id = new Guid("da50fb97-6cca-4b03-af03-2d34ef433d59"),
+                            Name = "Reveqqq",
+                            Password = "4444"
                         });
                 });
 

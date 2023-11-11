@@ -1,5 +1,4 @@
 ﻿using backend.DataAccess.Repository;
-using backend.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -9,6 +8,8 @@ using System.Security.Claims;
 using System.Text;
 using Microsoft.Extensions.Configuration;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using backend.Models.DB;
+using backend.Models.API.Auth;
 
 namespace backend.Controllers
 {
@@ -24,20 +25,21 @@ namespace backend.Controllers
         }
 
         [HttpPost("registrate")]
-        public IActionResult Registrate([FromBody] RegistrateModel registrateModel, IUnitOfWork unit)
+        public IActionResult Registrate([FromBody] RegistrateModel registrateModel, IUnitOfWork _unit)
         {
             if (registrateModel is null)
             {
                 return BadRequest("Invalid client request");
             }
 
-            unit.UserRepo.Add(new User
-            {
-                Name = registrateModel.Login,
-                Password = registrateModel.Password
-            });
+            _unit.UserRepo.Add(new User
+            (
+                guid : Guid.NewGuid(),
+                name : registrateModel.Login,
+                password: registrateModel.Password
+            ));
 
-            unit.Save();
+            _unit.Save();
 
             return Ok();
         }
@@ -50,7 +52,7 @@ namespace backend.Controllers
                 return BadRequest("Invalid client request");
             }
 
-            var user = unit.UserRepo.ReadFirst((user) => getJWTModel.Login == user.Name);
+            var user = unit.UserRepo.ReadFirst((user) => getJWTModel.Login == user.UserName);
 
             if (user is null)
             {
@@ -64,7 +66,7 @@ namespace backend.Controllers
 
                 var claimList = new List<Claim>
                 {
-                    new Claim(ClaimTypes.Name, user.Name)
+                    new Claim(ClaimTypes.Name, user.UserName)
                 };
 
                 var secretKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(JWTKey));
@@ -73,7 +75,7 @@ namespace backend.Controllers
                     issuer: "https://localhost:7021",
                     audience: "https://localhost:7021",
                     claims: claimList,
-                    expires: DateTime.Now.AddMinutes(5),
+                    expires: DateTime.Now.AddMinutes(60),
                     signingCredentials: signinCredentials
                 );
                 var tokenString = new JwtSecurityTokenHandler().WriteToken(tokeOptions);
@@ -96,7 +98,7 @@ namespace backend.Controllers
         [NonAction]
         public User? GetUserByIdentity(ClaimsIdentity claimsIdentity, IUnitOfWork unit)
         {
-            User? user = unit.UserRepo.ReadFirst(user => user.Name == claimsIdentity.Name);
+            User? user = unit.UserRepo.ReadFirst(user => user.UserName == claimsIdentity.Name);
             return user;
         }
     }
