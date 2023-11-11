@@ -81,7 +81,7 @@ namespace backend.Controllers
             var plot = _unit.PlotRepo.ReadFirst(p => p.PlotId == id);
 
             if (plot != null && plot.User.UserName != user.UserName)
-                return Unauthorized("Access denied")
+                return Unauthorized("Access denied");
 
             if (plot != null)
             {
@@ -116,7 +116,7 @@ namespace backend.Controllers
             return CreatedAtAction(
                 actionName: nameof(GetPlot),
                 routeValues: new { id = plot.PlotId },
-                value: response;
+                value: response);
         }
 
         [Authorize]
