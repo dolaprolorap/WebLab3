@@ -52,6 +52,31 @@ namespace backend.Controllers
                 );
         }
 
+        [HttpGet]
+        [Authorize]
+        public IActionResult GetAll() 
+        {
+            var identity = HttpContext.User.Identity as ClaimsIdentity;
+
+            IEnumerable<Plot> query = _unit.PlotRepo.ReadWhere(p => p.User.UserName == identity.Name).ToList();
+            IEnumerable<PlotResponse> response = new List<PlotResponse>();
+
+            foreach (Plot plot in query)
+            {
+                PlotResponse resp = new PlotResponse()
+                {
+                    Id = plot.PlotId,
+                    Name = plot.PlotName,
+                    JsonData = plot.JsonData,
+                    UserName = _unit.UserRepo.ReadFirst(u => u.UserId == plot.UserId).UserName
+                };
+                
+                response = response.Append(resp);
+            }
+
+            return Ok(response);
+        }
+
         [HttpGet("{id:guid}")]
         //Получает данные о графике по Id
         public IActionResult GetPlot(Guid id)
