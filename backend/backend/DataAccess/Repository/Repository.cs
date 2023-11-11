@@ -26,6 +26,12 @@ namespace backend.DataAccess.Repository
             return query.Where(filter).FirstOrDefault();
         }
 
+        public IQueryable<T> ReadWhere(Expression<Func<T, bool>> filter)
+        {
+            IQueryable<T> query = _dbSet;
+            return query.Where(filter);
+        }
+
         public void Remove(T entity)
         {
             _dbSet.Remove(entity);
