@@ -1,5 +1,5 @@
 ﻿using backend.DataAccess.Repository;
-using backend.Models.API;
+using backend.Models.API.Plot;
 using backend.Models.DB;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -30,7 +30,6 @@ namespace backend.Controllers
             var plot = new Plot(
                 guid: Guid.NewGuid(),
                 name: request.Name,
-                data: request.JsonData,
                 userId: user.UserId
                 );
 
@@ -40,9 +39,7 @@ namespace backend.Controllers
             var response = new PlotResponse()
             { 
                 Id = plot.PlotId,
-                Name = plot.PlotName,
-                JsonData = plot.JsonData,
-                UserName = user.UserName,
+                Name = plot.PlotName
             };
 
             return CreatedAtAction(
@@ -50,6 +47,29 @@ namespace backend.Controllers
                 routeValues: new { id = plot.PlotId },
                 value: response
                 );
+        }
+
+        [HttpGet]
+        [Authorize]
+        public IActionResult GetAll()
+        {
+            var identity = HttpContext.User.Identity as ClaimsIdentity;
+
+            IEnumerable<Plot> query = _unit.PlotRepo.ReadWhere(p => p.User.UserName == identity.Name).ToList();
+            IEnumerable<PlotResponse> response = new List<PlotResponse>();
+
+            foreach (Plot plot in query)
+            {
+                PlotResponse resp = new PlotResponse()
+                {
+                    Id = plot.PlotId,
+                    Name = plot.PlotName
+                };
+
+                response = response.Append(resp);
+            }
+
+            return Ok(response);
         }
 
         [HttpGet("{id:guid}")]
@@ -61,9 +81,7 @@ namespace backend.Controllers
             var response = new PlotResponse()
             {
                 Id = plot.PlotId,
-                Name = plot.PlotName,
-                JsonData = plot.JsonData,
-                UserName = _unit.UserRepo.ReadFirst(u => u.UserId == plot.UserId).UserName
+                Name = plot.PlotName
             };
 
             return Ok(response);
@@ -81,11 +99,10 @@ namespace backend.Controllers
             var plot = _unit.PlotRepo.ReadFirst(p => p.PlotId == id);
 
             if (plot != null && plot.User.UserName != user.UserName)
-                return Unauthorized("Access denied")
+                return Unauthorized("Access denied");
 
             if (plot != null)
             {
-                plot.JsonData = request.JsonData;
                 plot.PlotName = request.Name;
 
                 _unit.PlotRepo.Update(plot);
@@ -97,16 +114,13 @@ namespace backend.Controllers
             plot = new Plot(
                 guid: id,
                 name: request.Name,
-                data: request.JsonData,
                 userId: user.UserId
                 );
 
             var response = new PlotResponse()
             {
                 Id = plot.PlotId,
-                Name = plot.PlotName,
-                JsonData = plot.JsonData,
-                UserName = user.UserName
+                Name = plot.PlotName
             };
 
             _unit.PlotRepo.Add(plot);
@@ -116,7 +130,7 @@ namespace backend.Controllers
             return CreatedAtAction(
                 actionName: nameof(GetPlot),
                 routeValues: new { id = plot.PlotId },
-                value: response;
+                value: response);
         }
 
         [Authorize]
