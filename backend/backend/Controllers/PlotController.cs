@@ -1,5 +1,5 @@
 ﻿using backend.DataAccess.Repository;
-using backend.Models.API;
+using backend.Models.API.Plot;
 using backend.Models.DB;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -30,7 +30,6 @@ namespace backend.Controllers
             var plot = new Plot(
                 guid: Guid.NewGuid(),
                 name: request.Name,
-                data: request.JsonData,
                 userId: user.UserId
                 );
 
@@ -40,9 +39,7 @@ namespace backend.Controllers
             var response = new PlotResponse()
             { 
                 Id = plot.PlotId,
-                Name = plot.PlotName,
-                JsonData = plot.JsonData,
-                UserName = user.UserName,
+                Name = plot.PlotName
             };
 
             return CreatedAtAction(
@@ -66,11 +63,8 @@ namespace backend.Controllers
                 PlotResponse resp = new PlotResponse()
                 {
                     Id = plot.PlotId,
-                    Name = plot.PlotName,
-                    JsonData = plot.JsonData,
-                    UserName = _unit.UserRepo.ReadFirst(u => u.UserId == plot.UserId).UserName
+                    Name = plot.PlotName
                 };
-                
                 response = response.Append(resp);
             }
 
@@ -86,9 +80,7 @@ namespace backend.Controllers
             var response = new PlotResponse()
             {
                 Id = plot.PlotId,
-                Name = plot.PlotName,
-                JsonData = plot.JsonData,
-                UserName = _unit.UserRepo.ReadFirst(u => u.UserId == plot.UserId).UserName
+                Name = plot.PlotName
             };
 
             return Ok(response);
@@ -110,7 +102,6 @@ namespace backend.Controllers
 
             if (plot != null)
             {
-                plot.JsonData = request.JsonData;
                 plot.PlotName = request.Name;
 
                 _unit.PlotRepo.Update(plot);
@@ -122,16 +113,13 @@ namespace backend.Controllers
             plot = new Plot(
                 guid: id,
                 name: request.Name,
-                data: request.JsonData,
                 userId: user.UserId
                 );
 
             var response = new PlotResponse()
             {
                 Id = plot.PlotId,
-                Name = plot.PlotName,
-                JsonData = plot.JsonData,
-                UserName = user.UserName
+                Name = plot.PlotName
             };
 
             _unit.PlotRepo.Add(plot);

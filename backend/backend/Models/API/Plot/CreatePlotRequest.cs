@@ -1,9 +1,7 @@
-﻿namespace backend.Models.API
+﻿namespace backend.Models.API.Plot
 {
     public class CreatePlotRequest
     {
         public string Name { get; set; }
-        public string JsonData { get; set; }
-
     }
 }

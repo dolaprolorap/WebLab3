@@ -6,6 +6,7 @@ namespace backend.DataAccess.Repository
     {
         IRepository<User> UserRepo { get; }
         IRepository<Plot> PlotRepo { get; }
+        IRepository<PlotEntry> EntryRepo { get; }
         void Save();
     }
 }
