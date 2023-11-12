@@ -20,6 +20,12 @@ namespace backend.DataAccess.Repository
             return _dbSet.ToList();
         }
 
+        public IQueryable<T> ReadWhere(Expression<Func<T, bool>> filter)
+        {
+            IQueryable<T> query = _dbSet;
+            return query.Where(filter);
+        }
+
         public T? ReadFirst(Expression<Func<T, bool>> filter)
         {
             IQueryable<T> query = _dbSet;
