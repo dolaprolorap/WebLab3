@@ -51,7 +51,7 @@ namespace backend.Controllers
 
         [HttpGet]
         [Authorize]
-        public IActionResult GetAll()
+        public IActionResult GetAll() 
         {
             var identity = HttpContext.User.Identity as ClaimsIdentity;
 
@@ -65,7 +65,6 @@ namespace backend.Controllers
                     Id = plot.PlotId,
                     Name = plot.PlotName
                 };
-
                 response = response.Append(resp);
             }
 
