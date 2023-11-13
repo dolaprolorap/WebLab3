@@ -10,6 +10,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using backend.Models.DB;
 using backend.Models.API.Auth;
+using backend.Services;
 
 namespace backend.Controllers
 {
@@ -18,10 +19,12 @@ namespace backend.Controllers
     public class AuthenticationController : ControllerBase
     {
         private IConfiguration configuration;
+        private ITokenService tokenService;
 
-        public AuthenticationController(IConfiguration iConfig)
+        public AuthenticationController(IConfiguration iConfig, ITokenService tokenService)
         {
-            configuration = iConfig;
+            this.configuration = iConfig;
+            this.tokenService = tokenService;
         }
 
         [HttpPost("registrate")]
@@ -32,57 +35,64 @@ namespace backend.Controllers
                 return BadRequest("Invalid client request");
             }
 
+            var user = _unit.UserRepo.ReadFirst(user => user.UserName == registrateModel.Login);
+            if (user is not null) return Ok("Username is already in used");
+
+            IEnumerable<Claim> claims = new List<Claim>()
+            {
+                new Claim(ClaimTypes.Name, registrateModel.Login)
+            };
+
+            var token = tokenService.GenerateAccessToken(claims);
+            var refreshToken = tokenService.GenerateRefreshToken();
+
             _unit.UserRepo.Add(new User
             (
                 guid : Guid.NewGuid(),
                 name : registrateModel.Login,
-                password: registrateModel.Password
+                password: registrateModel.Password,
+                refreshToken: refreshToken,
+                refreshTokenExp: DateTime.Now.AddDays(14)
             ));
 
             _unit.Save();
 
-            return Ok();
+            return Ok(new AuthenticatedResponse
+            {
+                Token = token,
+                RefreshToken = refreshToken,
+            });
         }
 
-        [HttpPost("getjwt")]
-        public IActionResult GetJwt([FromBody] GetJWTModel getJWTModel, IUnitOfWork unit)
+        [HttpPost("login")]
+        public IActionResult Login([FromBody] LoginModel loginModel, IUnitOfWork _unit)
         {
-            if (getJWTModel is null)
+            if (loginModel is null)
             {
                 return BadRequest("Invalid client request");
             }
 
-            var user = unit.UserRepo.ReadFirst((user) => getJWTModel.Login == user.UserName);
+            var user = _unit.UserRepo.ReadFirst(user => (user.UserName == loginModel.Login) && (user.Password == loginModel.Password));
+            if (user is null) return Unauthorized();
 
-            if (user is null)
+            var claims = new List<Claim>
             {
-                return Unauthorized();
-            }
+                new Claim(ClaimTypes.Name, loginModel.Login),
+            };
 
-            if (user?.Password == getJWTModel?.Password)
+            var accessToken = tokenService.GenerateAccessToken(claims);
+            var refreshToken = tokenService.GenerateRefreshToken();
+
+            user.RefreshToken = refreshToken;
+            user.RefreshTokenExpiryTime = DateTime.Now.AddDays(14);
+
+            _unit.Save();
+
+            return Ok(new AuthenticatedResponse
             {
-                string? JWTKey = configuration.GetSection("Keys").GetSection("JWTKey").Value;
-                if (JWTKey is null) { return StatusCode(500); }
-
-                var claimList = new List<Claim>
-                {
-                    new Claim(ClaimTypes.Name, user.UserName)
-                };
-
-                var secretKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(JWTKey));
-                var signinCredentials = new SigningCredentials(secretKey, SecurityAlgorithms.HmacSha256);
-                var tokeOptions = new JwtSecurityToken(
-                    issuer: "https://localhost:7021",
-                    audience: "https://localhost:7021",
-                    claims: claimList,
-                    expires: DateTime.Now.AddMinutes(60),
-                    signingCredentials: signinCredentials
-                );
-                var tokenString = new JwtSecurityTokenHandler().WriteToken(tokeOptions);
-
-                return Ok(new AuthenticatedResponse { Token = tokenString });
-            }
-            return Unauthorized();
+                Token = accessToken,
+                RefreshToken = refreshToken
+            });
         }
 
         [HttpPost("getuser")]
