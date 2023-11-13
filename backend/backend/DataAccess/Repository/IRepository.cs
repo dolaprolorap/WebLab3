@@ -6,7 +6,6 @@ namespace backend.DataAccess.Repository
     {
         void Add(T entity);
         IEnumerable<T> ReadAll();
-        public IQueryable<T> ReadWhere(Expression<Func<T, bool>> filter);
         T? ReadFirst(Expression<Func<T, bool>> filter);
         void Update(T entity);
         void Remove(T entity);
