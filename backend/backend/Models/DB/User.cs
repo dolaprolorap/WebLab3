@@ -12,14 +12,18 @@ namespace backend.Models.DB
         [MaxLength(16)]
         [Required]
         public string Password { get; set; }
+        public string? RefreshToken { get; set; }
+        public DateTime? RefreshTokenExpiryTime { get; set; }
 
         protected User() {}
 
-        public User(Guid guid, string name, string password)
+        public User(Guid guid, string name, string password, string? refreshToken = null, DateTime? refreshTokenExp = null)
         {
             UserId = guid;
             UserName = name;
             Password = password;
+            RefreshToken = refreshToken;
+            RefreshTokenExpiryTime = refreshTokenExp;
         }
     }
 }
