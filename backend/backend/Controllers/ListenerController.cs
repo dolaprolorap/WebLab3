@@ -13,13 +13,18 @@ namespace backend.Controllers
     [ApiController]
     public class ListenerController : ControllerBase
     {
+        Mutex _mutex = new Mutex();
         IUnitOfWork _unit;
+        IConfiguration _config;
+        IServiceScopeFactory _scopeFactory;
         static Dictionary<Guid, Thread> _threads = new();
-        static Dictionary<Guid, Queue<string>>  _data= new();
+        static Dictionary<Guid, Queue<PlotEntry>>  _data= new();
         static Dictionary<Guid, bool> _flagger = new();
-        public ListenerController(IUnitOfWork unit)
+        public ListenerController(IUnitOfWork unit, IConfiguration config, IServiceScopeFactory scopeFactory)
         {
             _unit = unit;
+            _config = config;
+            _scopeFactory = scopeFactory;
         }
         ~ListenerController()
         {
@@ -65,7 +70,7 @@ namespace backend.Controllers
             thread.Start(request);
             _threads.Add(request.PlotId, thread);
             _flagger.Add(request.PlotId, true);
-            _data.Add(request.PlotId, new Queue<string>());
+            _data.Add(request.PlotId, new Queue<PlotEntry>());
 
             return Ok("Listener started");
         }
@@ -74,7 +79,22 @@ namespace backend.Controllers
         public IActionResult GetAll(Guid id)
         {
             if (!_data.Keys.Contains(id)) return Ok("No data");
-            return Ok(_data[id]);
+
+            DropBatch(id);
+
+            List<PlotEntry> res = _unit.EntryRepo.ReadWhere(e => e.PlotId == id).ToList();
+            List<EntryResponse> responses = new();
+
+            foreach (var entry in res)
+            {
+                responses.Add(new EntryResponse()
+                {
+                    Data = entry.Data,
+                    Date = entry.Date
+                });
+            }
+
+            return Ok(responses);
         }
 
         [HttpDelete("{id:guid}")]
@@ -82,6 +102,10 @@ namespace backend.Controllers
         {
             if (_threads.Keys.Contains(id))
             {
+                List<PlotEntry> entries = _unit.EntryRepo.ReadWhere(e => e.PlotId == id).ToList();
+                _unit.EntryRepo.RemoveRange(entries);
+                _unit.Save();
+
                 Thread thread = _threads[id];
                 _flagger[id] = false;
                 thread.Join();
@@ -100,6 +124,7 @@ namespace backend.Controllers
 
             int rem = request.Count;
             int time = request.Sleep;
+            int limit = int.Parse(_config.GetSection("BatchSize").Value);
 
             HttpClient client = new()
             {
@@ -121,14 +146,41 @@ namespace backend.Controllers
 
                     rem--;
 
-                    _data[request.PlotId].Enqueue(json);
+                    _data[request.PlotId].Enqueue(new PlotEntry
+                        (
+                            guid: Guid.NewGuid(),
+                            data: json,
+                            date: DateTime.Now,
+                            plotId: request.PlotId
+                        ));
 
-                    if (_data[request.PlotId].Count > request.Limit) _data[request.PlotId].Dequeue();
+                    if (_data[request.PlotId].Count >= limit) DropBatch(request.PlotId);
 
                     time = 0;
                 }
                 Thread.Sleep(1000);
                 time++;
+            }
+        }
+
+        [NonAction]
+        void DropBatch(Guid id)
+        {
+            using (var scope = _scopeFactory.CreateScope())
+            {
+                _mutex.WaitOne();
+
+                var unit = scope.ServiceProvider.GetService<IUnitOfWork>();
+
+                foreach (var entry in _data[id])
+                {
+                    unit.EntryRepo.Add(entry);
+                }
+                unit.Save();
+
+                _mutex.ReleaseMutex();
+
+                _data[id].Clear();
             }
         }
     }
