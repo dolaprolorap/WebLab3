@@ -141,6 +141,8 @@ namespace backend.Controllers
             var user = _unit.UserRepo.ReadFirst(u => u.UserName == identity.Name);
             var plot = _unit.PlotRepo.ReadFirst(p => p.PlotId == id);
 
+            if(plot is null) return NotFound();
+
             if (plot.UserId != user.UserId)
                 return Unauthorized("Access denied");
 
