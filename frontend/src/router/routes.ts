@@ -10,6 +10,14 @@ const routes: RouteRecordRaw[] = [
         path: 'plots',
         component: () => import('pages/PlotsPage.vue')
       },
+      {
+        path: 'auth',
+        component: () => import('pages/AuthPage.vue')
+      },
+      {
+        path: 'reg',
+        component: () => import('pages/RegPage.vue')
+      },
     ]
   },
 
