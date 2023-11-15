@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.VisualBasic;
 using System.Security.Claims;
+using System.Text;
 
 namespace backend.Controllers
 {
@@ -65,6 +66,9 @@ namespace backend.Controllers
 
             if (plot.UserId != user.UserId)
                 return Unauthorized("Acess denied");
+
+            if (!(request.Mode == "get" || request.Mode == "post"))
+                return BadRequest("Unsupported mode");
 
             Thread thread = new Thread(ListenerThread);
             thread.Start(request);
@@ -139,7 +143,16 @@ namespace backend.Controllers
 
                 if (time == request.Sleep)
                 {
-                    HttpResponseMessage apiResp = client.GetAsync("").Result;
+                    HttpResponseMessage apiResp;
+                    if (request.Mode == "get")
+                        apiResp = client.GetAsync("").Result;
+                    else if (request.Mode == "post")
+                    {
+                        StringContent jsonContent = new(request.Body, Encoding.UTF8, "application/json");
+                        apiResp = client.PostAsync("", jsonContent).Result;
+                    }
+                    else return;
+                    
                     apiResp.EnsureSuccessStatusCode();
 
                     var json = apiResp.Content.ReadAsStringAsync().Result;

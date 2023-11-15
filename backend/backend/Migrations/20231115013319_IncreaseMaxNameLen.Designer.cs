@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using backend.DataAccess;
@@ -11,9 +12,11 @@ using backend.DataAccess;
 namespace backend.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20231115013319_IncreaseMaxNameLen")]
+    partial class IncreaseMaxNameLen
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -99,6 +102,32 @@ namespace backend.Migrations
                         .IsUnique();
 
                     b.ToTable("Users");
+
+                    b.HasData(
+                        new
+                        {
+                            UserId = new Guid("32e8110c-b664-4a8b-b69d-f59fba269314"),
+                            Password = "1111",
+                            UserName = "RadiantDwarf"
+                        },
+                        new
+                        {
+                            UserId = new Guid("3b078e3f-e9a4-4098-adf2-ced840603bb4"),
+                            Password = "2222",
+                            UserName = "Dolaprolorap"
+                        },
+                        new
+                        {
+                            UserId = new Guid("5399ee18-ffdf-470b-bbae-160287b33244"),
+                            Password = "3333",
+                            UserName = "UltraGreed"
+                        },
+                        new
+                        {
+                            UserId = new Guid("da50fb97-6cca-4b03-af03-2d34ef433d59"),
+                            Password = "4444",
+                            UserName = "Reveqqq"
+                        });
                 });
 
             modelBuilder.Entity("backend.Models.DB.Plot", b =>

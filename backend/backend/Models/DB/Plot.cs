@@ -7,7 +7,7 @@ namespace backend.Models.DB
     {
         [Key]
         public Guid PlotId { get; set; }
-        [MaxLength(16)]
+        [MaxLength(255)]
         [Required]
         public string PlotName { get; set; }
     

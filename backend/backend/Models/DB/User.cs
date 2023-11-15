@@ -6,7 +6,7 @@ namespace backend.Models.DB
     {
         [Key]
         public Guid UserId { get; set; }
-        [MaxLength(16)]
+        [MaxLength(255)]
         [Required]
         public string UserName { get; set; }
         [MaxLength(255)]
