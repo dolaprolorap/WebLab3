@@ -11,6 +11,7 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using backend.Models.DB;
 using backend.Models.API.Auth;
 using backend.Services;
+using System.Security.Cryptography;
 
 namespace backend.Controllers
 {
@@ -20,11 +21,15 @@ namespace backend.Controllers
     {
         private IConfiguration configuration;
         private ITokenService tokenService;
+        private IPasswordHasher passwordHasher;
+        private IPasswordValidator passwordValidator;
 
-        public AuthenticationController(IConfiguration iConfig, ITokenService tokenService)
+        public AuthenticationController(IConfiguration iConfig, ITokenService tokenService, IPasswordHasher passwordHasher, IPasswordValidator passwordValidator)
         {
             this.configuration = iConfig;
             this.tokenService = tokenService;
+            this.passwordHasher = passwordHasher;
+            this.passwordValidator = passwordValidator;
         }
 
         [HttpPost("registrate")]
@@ -46,13 +51,18 @@ namespace backend.Controllers
             var token = tokenService.GenerateAccessToken(claims);
             var refreshToken = tokenService.GenerateRefreshToken();
 
+            const int saltSize = 64;
+            string salt = Convert.ToHexString(RandomNumberGenerator.GetBytes(saltSize));
+            string pepper = configuration.GetSection("PasswordHashing").GetSection("Pepper").Value;
+
             _unit.UserRepo.Add(new User
             (
                 guid : Guid.NewGuid(),
                 name : registrateModel.Login,
-                password: registrateModel.Password,
+                password: passwordHasher.Hash(registrateModel.Password, salt, pepper),
                 refreshToken: refreshToken,
-                refreshTokenExp: DateTime.Now.AddDays(14)
+                refreshTokenExp: DateTime.Now.AddDays(14),
+                salt: salt
             ));
 
             _unit.Save();
@@ -72,8 +82,11 @@ namespace backend.Controllers
                 return BadRequest("Invalid client request");
             }
 
-            var user = _unit.UserRepo.ReadFirst(user => (user.UserName == loginModel.Login) && (user.Password == loginModel.Password));
+            var user = _unit.UserRepo.ReadFirst(user => user.UserName == loginModel.Login);
             if (user is null) return Unauthorized();
+
+            var pepper = configuration.GetSection("PasswordHashing").GetSection("Pepper").Value;
+            if (!passwordValidator.Validate(loginModel.Password, user.Password, user.Salt, pepper)) return Unauthorized();
 
             var claims = new List<Claim>
             {
