@@ -1,7 +1,3 @@
-<template>
-  <LineChart :data="data" :options="options" />
-</template>
-
 <script setup lang="ts">
 import { defineProps } from 'vue'
 import {
@@ -14,7 +10,7 @@ import {
   Tooltip,
   Legend
 } from 'chart.js'
-import { Line as LineChart } from 'vue-chartjs'
+import { Line } from 'vue-chartjs'
 
 ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend)
 
@@ -42,3 +38,8 @@ const options = {
   maintainAspectRatio: false
 }
 </script>
+
+<template>
+  <Line :data="data" :options="options" />
+</template>
+

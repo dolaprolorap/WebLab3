@@ -8,11 +8,24 @@
           </router-link>
         </q-toolbar-title>
         <div class="col-5 row justify-between">
-          <router-link to="/plots" class="pages-nav nav-item page-title">
+          <router-link
+            to="/plots"
+            class="pages-nav nav-item page-title non-selectable"
+          >
             plots
           </router-link>
-          <router-link to="/market" class="pages-nav nav-item page-title">
+          <router-link
+            to="/market"
+            class="pages-nav nav-item page-title non-selectable"
+          >
             market
+          </router-link>
+          <router-link
+            to="/profile"
+            class="pages-nav nav-item page-title non-selectable"
+            v-if="authorized"
+          >
+            profile
           </router-link>
 
           <a
@@ -49,6 +62,7 @@
 
 <script setup lang="ts">
 import { useQuasar } from 'quasar';
+
 const $q = useQuasar();
 const authorized = $q.localStorage.getItem('refreshToken') !== null;
 const LogOut = () => {
